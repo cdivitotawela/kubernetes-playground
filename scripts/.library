@@ -4,6 +4,12 @@
 #
 ##############################################
 
+# NFS data store
+ADMIN_VM_IP="172.24.20.10"
+NFS_FOLDER="/nfs"
+NFS_MOUNT="/data"
+
+
 KUBERNETES_VERSION=1.18.10
 
 # Vagrant use eth0 and kubernetes cluster is
@@ -33,3 +39,4 @@ error()
   log "ERROR $1"
   exit 2
 }
+yum install -y nfs-utils

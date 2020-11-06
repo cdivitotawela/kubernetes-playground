@@ -5,7 +5,7 @@
 ############################################
 
 # Determine script home full path
-SCRIPT_HOME=/vagrant
+SCRIPT_HOME=/vagrant/scripts
 
 # Load library
 source $SCRIPT_HOME/.library || {

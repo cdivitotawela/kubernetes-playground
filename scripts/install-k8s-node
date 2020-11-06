@@ -5,7 +5,7 @@
 ############################################
 
 # Determine script home full path
-SCRIPT_HOME=/vagrant
+SCRIPT_HOME=/vagrant/scripts
 
 # Load library
 source $SCRIPT_HOME/.library || {
@@ -13,6 +13,15 @@ source $SCRIPT_HOME/.library || {
   exit 3
 }
 
+############################################
+# Mount NFS share
+############################################
+mkdir -p $NFS_MOUNT
+yum install -y nfs-utils
+
+# Check whether entry already added. If not add the entry.
+grep -q "^$ADMIN_VM_IP:$NFS_FOLDER" /etc/fstab || echo "$ADMIN_VM_IP:$NFS_FOLDER      $NFS_MOUNT     nfs     defaults   0 0" >> /etc/fstab
+mount -a
 
 ############################################
 # Initialize cluster
@@ -37,4 +46,6 @@ nodeRegistration:
 certificateKey: "${CERTIFICATE_KEY}"
 EOF
 
-kubeadm join --config $KUBEADM_CONFIG
+# Check kubelet service is running. If running it is assumed node has been already joined to the cluster
+systemctl status kubelet >/dev/null >&1 || kubeadm join --config $KUBEADM_CONFIG
+

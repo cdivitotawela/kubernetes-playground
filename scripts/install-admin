@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+#
+# Common installation on all nodes
+#
+############################################
+
+# Determine script home full path
+SCRIPT_HOME=/vagrant/scripts
+
+# Load library
+source $SCRIPT_HOME/.library || {
+  echo "ERROR: Failed to load the library script $SCRIPT_HOME/.library"
+  exit 3
+}
+
+############################################
+# Install and configure NFS server
+############################################
+yum install -y nfs-utils
+
+systemctl start nfs
+systemctl enable nfs
+
+mkdir -p $NFS_FOLDER
+chown nfsnobody:nfsnobody $NFS_FOLDER
+chmod 755 /nfs
+
+cat<<EOF >/etc/exports
+/nfs  172.24.20.0/24(rw,all_squash)
+EOF
+
+exportfs -a
+
+############################################
+# Install docker-compose
+############################################
+
+docker-compose version >/dev/null >&1 || {
+  curl -s -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /bin/docker-compose
+  chmod +x /bin/docker-compose
+}
+
+docker-compose version || error "Docker compose version validation failed"
