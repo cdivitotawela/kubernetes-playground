@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+#
+# Common installation on all nodes
+#
+############################################
+
+# Determine script home full path
+SCRIPT_HOME=/vagrant
+
+# Load library
+source $SCRIPT_HOME/.library || {
+  echo "ERROR: Failed to load the library script $SCRIPT_HOME/.library"
+  exit 3
+}
+
+
+############################################
+# Initialize cluster
+############################################
+
+# By default kubelet picks the first interface ip as node-ip. Given this Vagrant use first interface for itself
+# cluster is created on proviate network on second interface. Following code determine the ip address of the
+# device which specified with variable VM_CLUSTER_NIC_ID
+KUBEADM_CONFIG=$(mktemp)
+NODE_IP=$(ip address show dev ${VM_CLUSTER_NIC_ID} scope global | grep inet | sed 's/.*inet\s*\([0-9]*\.[0-9]*\.[0-9]*\.[0-9]*\).*/\1/g')
+
+# Kubeadm confiruation file for cluster creation
+cat <<EOF > $KUBEADM_CONFIG
+kind: InitConfiguration
+apiVersion: kubeadm.k8s.io/v1beta2
+bootstrapTokens:
+   - groups:
+     - system:bootstrappers:kubeadm:default-node-token
+     token: ${BOOTSTRAP_TOKEN}
+     ttl: 0h15m0s
+     usages:
+     - signing
+     - authentication
+nodeRegistration:
+certificateKey: "${CERTIFICATE_KEY}"
+---
+kind: ClusterConfiguration
+apiVersion: kubeadm.k8s.io/v1beta2
+kubernetesVersion: v${KUBERNETES_VERSION}
+controlPlaneEndpoint: "${MASTER_NODE_IP}:${API_SERVER_PORT}"
+apiServer:
+  extraArgs:
+    advertise-address: "${MASTER_NODE_IP}"
+networking:
+  dnsDomain: "base2.k8s"
+  serviceSubnet: "${SERVICE_SUBNET}"
+  podSubnet: "${POD_SUBNET}"
+clusterName: "${DNS_DOMAIN}"
+EOF
+
+# Initialise the cluster with kubeadm. First check cluster is running. If not lets initialize
+curl -s --fail --connect-timeout 2 -k -o /dev/null https://127.0.0.1:6442/version || {
+  kubeadm init --config $KUBEADM_CONFIG > /tmp/kubeadm-init.log || error "Failed to initialize the cluster"
+  mkdir -p $HOME/.kube
+  cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  kubectl get nodes > /dev/null || error "Failed to verify the cluster initialized"
+}
+
+# Create CNI manifest file
+export VM_CLUSTER_NIC_ID
+TEMP_CNI_MANIFEST=$(mktemp)
+envsubst < ${SCRIPT_HOME}/cni/${CNI_MANIFEST_TEMPLATE} > ${TEMP_CNI_MANIFEST}
+
+# Apply the CNI manifest
+kubectl apply -f ${TEMP_CNI_MANIFEST}

@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+#
+# Common installation on all nodes
+#
+############################################
+
+# Determine script home full path
+SCRIPT_HOME=/vagrant
+
+# Load library
+source $SCRIPT_HOME/.library || {
+  echo "ERROR: Failed to load the library script $SCRIPT_HOME/.library"
+  exit 3
+}
+
+
+############################################
+# Initialize cluster
+############################################
+
+KUBEADM_CONFIG=$(mktemp)
+NODE_IP=$(ip address show dev ${VM_CLUSTER_NIC_ID} scope global | grep inet | sed 's/.*inet\s*\([0-9]*\.[0-9]*\.[0-9]*\.[0-9]*\).*/\1/g')
+
+cat <<EOF > $KUBEADM_CONFIG
+---
+kind: JoinConfiguration
+apiVersion: kubeadm.k8s.io/v1beta2
+discovery:
+  bootstrapToken:
+    apiServerEndpoint: "${MASTER_NODE_IP}:${API_SERVER_PORT}"
+    token: ${BOOTSTRAP_TOKEN}
+    unsafeSkipCAVerification: true
+  timeout: 5m0s
+nodeRegistration:
+  kubeletExtraArgs:
+    node-ip: ${NODE_IP}
+certificateKey: "${CERTIFICATE_KEY}"
+EOF
+
+kubeadm join --config $KUBEADM_CONFIG

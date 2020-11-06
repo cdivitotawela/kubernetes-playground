@@ -1,0 +1,35 @@
+#!/bin/null
+#
+# Shared libraries
+#
+##############################################
+
+KUBERNETES_VERSION=1.18.10
+
+# Vagrant use eth0 and kubernetes cluster is
+VM_CLUSTER_NIC_ID=eth1
+
+# Kubernetes cluster parameters
+CERTIFICATE_KEY="fd02eda251a7ad9ee4956fba22d0cd7f77efe894c1b87eaf12698808eeaf13ae"
+MASTER_NODE_IP="172.24.20.11"
+API_SERVER_PORT="6443"
+BOOTSTRAP_TOKEN="hucho0.tpeatyn6103cfvwq"
+SERVICE_SUBNET="172.21.0.0/16"
+POD_SUBNET="192.168.0.0/16"  # Do not change as Calico default is set to this
+CLUSTER_NAME="base2"
+DNS_DOMAIN="${CLUSTER_NAME}.k8s"
+
+# CNI
+CNI_MANIFEST_TEMPLATE="calico-3.16.4.template"
+
+
+log()
+{
+  echo "$1"
+}
+
+error()
+{
+  log "ERROR $1"
+  exit 2
+}
