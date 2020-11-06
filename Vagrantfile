@@ -10,18 +10,6 @@ Vagrant.configure("2") do |config|
     v.cpus = 2
   end
 
-  %w{admin}.each_with_index do |name, i|
-    config.vm.define name do |admin|
-      admin.vm.box = "centos/7"
-      admin.vm.hostname = name
-      admin.vm.provider :virtualbox do |v|
-        v.name = name
-      end
-      admin.vm.network :private_network, ip: "172.24.20.10"
-#      admin.vm.provision "shell", path: 'install-base.sh'
-    end
-  end
-
   %w{master}.each_with_index do |name, i|
     config.vm.define name do |master|
       master.vm.box = "centos/7"
@@ -43,7 +31,7 @@ Vagrant.configure("2") do |config|
       node.vm.provider :virtualbox do |v|
         v.name = name
       end
-      node.vm.network :private_network, ip: "172.24.20.#{i + 20}"
+      node.vm.network :private_network, ip: "172.24.20.#{i + 21}"
       node.vm.provision "shell", path: 'install-base'
       node.vm.provision "shell", path: 'install-k8s-common'
       node.vm.provision "shell", path: 'install-k8s-node'

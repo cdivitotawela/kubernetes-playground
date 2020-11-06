@@ -37,6 +37,8 @@ bootstrapTokens:
      - signing
      - authentication
 nodeRegistration:
+  kubeletExtraArgs:
+    node-ip: ${NODE_IP}
 certificateKey: "${CERTIFICATE_KEY}"
 ---
 kind: ClusterConfiguration
