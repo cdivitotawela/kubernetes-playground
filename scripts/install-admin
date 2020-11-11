@@ -41,3 +41,35 @@ docker-compose version >/dev/null >&1 || {
 }
 
 docker-compose version || error "Docker compose version validation failed"
+
+
+############################################
+# Start Gitlab
+############################################
+
+mkdir -p $GITLAB_HOME && chmod 777 -R $GITLAB_HOME
+mkdir -p /var/lib/gitlab
+
+cat <<EOF > /var/lib/gitlab/docker-compose.yaml
+gitlab:
+  image: 'gitlab/gitlab-ce:latest'
+  container_name: gitlab
+  restart: always
+  hostname: "$GITLAB_DOMAIN"
+  environment:
+    GITLAB_OMNIBUS_CONFIG: |
+      external_url "https://$GITLAB_DOMAIN"
+  ports:
+    - '80:80'
+    - '443:443'
+    - '2200:22'
+  volumes:
+    - '$GITLAB_HOME/config:/etc/gitlab'
+    - '$GITLAB_HOME/logs:/var/log/gitlab'
+    - '$GITLAB_HOME/data:/var/opt/gitlab'
+EOF
+
+docker-compose -f /var/lib/gitlab/docker-compose.yaml up -d || error "Failed to start the Gitlab container"
+
+# Set root user password
+docker exec gitlab /bin/bash -c "echo 'user = User.find_by(username: \"root\"); user.password = \"$GITLAB_ROOT_PASSWORD\"; user.password_confirmation = \"$GITLAB_ROOT_PASSWORD\"; user.save' | gitlab-rails console" || error "Failed to set gitlab root password"

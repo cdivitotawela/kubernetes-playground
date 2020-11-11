@@ -6,22 +6,22 @@ Vagrant.configure("2") do |config|
   config.vm.provision "file", source: "~/.ssh/k8s.pub", destination: "~/.ssh/authorized_keys"
 
   config.vm.provider :virtualbox do |v|
-    v.memory = 2048
+    v.memory = 2096
     v.cpus = 2
   end
 
-  %w{admin}.each_with_index do |name, i|
-    config.vm.define name do |admin|
-      admin.vm.box = "centos/7"
-      admin.vm.hostname = name
-      admin.vm.provider :virtualbox do |v|
-        v.name = name
-      end
-      admin.vm.network :private_network, ip: "172.24.20.10"
-      admin.vm.provision "shell", path: 'scripts/install-base'
-      admin.vm.provision "shell", path: 'scripts/install-admin'
-    end
-  end
+  # %w{admin}.each_with_index do |name, i|
+  #   config.vm.define name do |admin|
+  #     admin.vm.box = "centos/7"
+  #     admin.vm.hostname = name
+  #     admin.vm.provider :virtualbox do |v|
+  #       v.name = name
+  #     end
+  #     admin.vm.network :private_network, ip: "172.24.20.10"
+  #     admin.vm.provision "shell", path: 'scripts/install-base'
+  #     admin.vm.provision "shell", path: 'scripts/install-admin'
+  #   end
+  # end
 
   %w{master}.each_with_index do |name, i|
     config.vm.define name do |master|
@@ -43,6 +43,8 @@ Vagrant.configure("2") do |config|
       node.vm.hostname = name
       node.vm.provider :virtualbox do |v|
         v.name = name
+        v.memory = 8196
+        v.cpus = 4
       end
       node.vm.network :private_network, ip: "172.24.20.#{i + 21}"
       node.vm.provision "shell", path: 'scripts/install-base'

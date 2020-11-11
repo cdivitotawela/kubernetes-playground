@@ -28,6 +28,12 @@ DNS_DOMAIN="${CLUSTER_NAME}.k8s"
 # CNI
 CNI_MANIFEST_TEMPLATE="calico-3.16.4.template"
 
+# Gitlab Home
+GITLAB_HOME="/srv"
+GITLAB_DOMAIN="gitlab.kubernetes.devops"
+
+# Passwords
+GITLAB_ROOT_PASSWORD="Bdju*2masjA"
 
 log()
 {
