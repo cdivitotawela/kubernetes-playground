@@ -1,9 +1,11 @@
 Vagrant.configure("2") do |config|
   config.vm.box_check_update = false
   config.vm.box_version = "1905.1"
-  config.ssh.insert_key = false
-  config.ssh.private_key_path = ["~/.ssh/k8s","~/.vagrant.d/insecure_private_key"]
-  config.vm.provision "file", source: "~/.ssh/k8s.pub", destination: "~/.ssh/authorized_keys"
+
+# Use following setting to specify custom ssh keys
+#  config.ssh.insert_key = false
+#  config.ssh.private_key_path = ["~/.ssh/k8s","~/.vagrant.d/insecure_private_key"]
+#  config.vm.provision "file", source: "~/.ssh/k8s.pub", destination: "~/.ssh/authorized_keys"
 
   config.vm.provider :virtualbox do |v|
     v.memory = 2096
@@ -45,8 +47,8 @@ Vagrant.configure("2") do |config|
       node.vm.hostname = name
       node.vm.provider :virtualbox do |v|
         v.name = name
-        v.memory = 12000
-        v.cpus = 4
+        v.memory = 4096
+        v.cpus = 2
       end
       node.vm.network :private_network, ip: "172.24.20.#{i + 21}"
       # Forward port on node1 30443 for ingress.

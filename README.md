@@ -9,6 +9,12 @@ Its a single command Vagrant up to setup full kubernetes play environment in a l
 - VirtualBox 6.x
 
 
+## Start Cluster
+
+Provision cluster with single command `vagrant up`.
+Access the any of the nodes with `vagrant ssh <admin/master/node1/node2>`
+Run kubectl commands on master as root `kubectl get nodes`
+
 
 ## Dynamic NFS PV Storage
 
