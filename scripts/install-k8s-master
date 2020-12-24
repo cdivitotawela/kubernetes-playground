@@ -49,7 +49,6 @@ apiServer:
   extraArgs:
     advertise-address: "${MASTER_NODE_IP}"
 networking:
-  dnsDomain: "base2.k8s"
   serviceSubnet: "${SERVICE_SUBNET}"
   podSubnet: "${POD_SUBNET}"
 clusterName: "${DNS_DOMAIN}"

@@ -20,7 +20,7 @@ Vagrant.configure("2") do |config|
       admin.vm.network :private_network, ip: "172.24.20.10"
       admin.vm.provision "shell", path: 'scripts/install-base'
       admin.vm.provision "shell", path: 'scripts/install-admin'
-      admin.vm.provision "shell", path: 'scripts/install-nfs-server'
+      admin.vm.provision "shell", path: 'scripts/tools/setup-nfs-server'
     end
   end
 
@@ -35,22 +35,29 @@ Vagrant.configure("2") do |config|
       master.vm.provision "shell", path: 'scripts/install-base'
       master.vm.provision "shell", path: 'scripts/install-k8s-common'
       master.vm.provision "shell", path: 'scripts/install-k8s-master'
+      master.vm.provision "shell", path: 'scripts/tools/setup-nfs-client-provision'
     end
   end
 
-  %w{node1}.each_with_index do |name, i|
+  %w{node1 node2}.each_with_index do |name, i|
     config.vm.define name do |node|
       node.vm.box = "centos/7"
       node.vm.hostname = name
       node.vm.provider :virtualbox do |v|
         v.name = name
-        v.memory = 8196
+        v.memory = 12000
         v.cpus = 4
       end
       node.vm.network :private_network, ip: "172.24.20.#{i + 21}"
+      # Forward port on node1 30443 for ingress.
+      if name == 'node1'
+        node.vm.network "forwarded_port", guest: 30443, host: 30443
+      end
+
       node.vm.provision "shell", path: 'scripts/install-base'
       node.vm.provision "shell", path: 'scripts/install-k8s-common'
       node.vm.provision "shell", path: 'scripts/install-k8s-node'
+
     end
   end
 

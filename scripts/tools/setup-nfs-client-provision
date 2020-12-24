@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+#
+# Setup NFS dynamic volume provisioning
+#
+# Example PVC manifest
+#
+#  kind: PersistentVolumeClaim
+#  apiVersion: v1
+#  metadata:
+#    name: my-claim
+#    annotations:
+#      # Check the variable NFS_STORAGE_CLASS see the value
+#      volume.beta.kubernetes.io/storage-class: "nfs-storage"
+#  spec:
+#    accessModes:
+#      - ReadWriteOnce
+#    resources:
+#      requests:
+#        storage: 1Mi
+#
+############################################
+
+# Determine script home full path
+SCRIPT_HOME=/vagrant/scripts
+
+# Load library
+source $SCRIPT_HOME/.library || {
+  echo "ERROR: Failed to load the library script $SCRIPT_HOME/.library"
+  exit 3
+}
+
+############################################
+# Install using inline manifests
+############################################
+
+TEMP_DIR=$(mktemp -d)
+log "Work directory $TEMP_DIR"
+
+# envsubst requires variables exported
+export ADMIN_VM_IP NFS_FOLDER
+
+# Manifest generated inline as its easier to apply variable values
+cat <<EOF > $TEMP_DIR/nfs-manifest.yaml
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: nfs
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nfs-client-provisioner
+  namespace: nfs
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: nfs-client-provisioner-runner
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "update", "patch"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: run-nfs-client-provisioner
+subjects:
+  - kind: ServiceAccount
+    name: nfs-client-provisioner
+    namespace: nfs
+roleRef:
+  kind: ClusterRole
+  name: nfs-client-provisioner-runner
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: leader-locking-nfs-client-provisioner
+  namespace: nfs
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: leader-locking-nfs-client-provisioner
+  namespace: nfs
+subjects:
+  - kind: ServiceAccount
+    name: nfs-client-provisioner
+    namespace: nfs
+roleRef:
+  kind: Role
+  name: leader-locking-nfs-client-provisioner
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nfs-client-provisioner
+  labels:
+    app: nfs-client-provisioner
+  namespace: nfs
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nfs-client-provisioner
+  template:
+    metadata:
+      labels:
+        app: nfs-client-provisioner
+    spec:
+      serviceAccountName: nfs-client-provisioner
+      containers:
+        - name: nfs-client-provisioner
+          image: quay.io/external_storage/nfs-client-provisioner:v3.1.0-k8s1.11
+          volumeMounts:
+            - name: nfs-client-root
+              mountPath: /persistentvolumes
+          env:
+            - name: PROVISIONER_NAME
+              value: nfs-storage
+            - name: NFS_SERVER
+              value: ${ADMIN_VM_IP}
+            - name: NFS_PATH
+              value: ${NFS_FOLDER}
+      volumes:
+        - name: nfs-client-root
+          nfs:
+            server: ${ADMIN_VM_IP}
+            path: ${NFS_FOLDER}
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ${NFS_STORAGE_CLASS}
+provisioner: nfs-storage
+parameters:
+  archiveOnDelete: "false"
+EOF
+
+# Apply generated manifest
+kubectl apply -f $TEMP_DIR/nfs-manifest.yaml || error "Failed to apply nfs client provisioner manifest"
+
+# Cleanup
+rm -rf $TEMP_DIR

@@ -48,4 +48,3 @@ EOF
 
 # Check kubelet service is running. If running it is assumed node has been already joined to the cluster
 systemctl status kubelet >/dev/null >&1 || kubeadm join --config $KUBEADM_CONFIG
-
