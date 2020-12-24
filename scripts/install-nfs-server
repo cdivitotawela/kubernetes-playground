@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+#
+# Install NFS server
+#
+############################################
+
+# Determine script home full path
+SCRIPT_HOME=/vagrant/scripts
+
+# Load library
+source $SCRIPT_HOME/.library || {
+  echo "ERROR: Failed to load the library script $SCRIPT_HOME/.library"
+  exit 3
+}
+
+############################################
+# Install and configure NFS server
+############################################
+yum install -y nfs-utils
+
+systemctl start nfs
+systemctl enable nfs
+
+mkdir -p $NFS_FOLDER
+chown nfsnobody:nfsnobody $NFS_FOLDER
+chmod 755 /nfs
+
+cat<<EOF >/etc/exports
+/nfs  172.24.20.0/24(rw,all_squash)
+EOF
+
+exportfs -a

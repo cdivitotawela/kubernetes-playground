@@ -10,18 +10,19 @@ Vagrant.configure("2") do |config|
     v.cpus = 2
   end
 
-  # %w{admin}.each_with_index do |name, i|
-  #   config.vm.define name do |admin|
-  #     admin.vm.box = "centos/7"
-  #     admin.vm.hostname = name
-  #     admin.vm.provider :virtualbox do |v|
-  #       v.name = name
-  #     end
-  #     admin.vm.network :private_network, ip: "172.24.20.10"
-  #     admin.vm.provision "shell", path: 'scripts/install-base'
-  #     admin.vm.provision "shell", path: 'scripts/install-admin'
-  #   end
-  # end
+  %w{admin}.each_with_index do |name, i|
+    config.vm.define name do |admin|
+      admin.vm.box = "centos/7"
+      admin.vm.hostname = name
+      admin.vm.provider :virtualbox do |v|
+        v.name = name
+      end
+      admin.vm.network :private_network, ip: "172.24.20.10"
+      admin.vm.provision "shell", path: 'scripts/install-base'
+      admin.vm.provision "shell", path: 'scripts/install-admin'
+      admin.vm.provision "shell", path: 'scripts/install-nfs-server'
+    end
+  end
 
   %w{master}.each_with_index do |name, i|
     config.vm.define name do |master|
