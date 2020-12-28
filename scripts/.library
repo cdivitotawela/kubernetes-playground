@@ -33,6 +33,12 @@ DOCKER_COMPOSE_VERSION="1.27.4"
 # NFS dynamic PVs
 NFS_STORAGE_CLASS="nfs-storage"
 
+# Helm version
+HELM_VERSION="v3.4.2"
+
+# Cert manager helm chart version
+HELM_CERT_MANAGER_VERSION="v1.1.0"
+
 ##############################################
 # Utility functions
 ##############################################
@@ -45,4 +51,41 @@ error()
 {
   log "ERROR $1"
   exit 2
+}
+
+# Wait for number of replicas to be available
+check_replicas()
+{
+  namespace="${1}"
+  deployment="${2}"
+  replicas=${3:-1}
+
+  max_retries=12
+  sleep_seconds=10
+  ready=NO
+
+  log "Checking replica count for deploy ${deployment} on namespace ${namespace}"
+  while [ $ready == 'NO' -a $max_retries -gt 0 ]
+  do
+    count=$(kubectl get deploy ${deployment} -n ${namespace} -o jsonpath='{.status.readyReplicas}')
+
+    if [[ $count -eq $replicas ]]
+    then
+      ready='YES'
+    else
+      log "Replica count is [${count}]. Waiting for ${sleep_seconds}s..."
+      max_retries=$(( ${max_retries} - 1 ))
+      sleep ${sleep_seconds}
+    fi
+  done
+
+  # Return status
+  if [[ $ready == 'NO' ]]
+  then
+    log "Expected replica count not found"
+    return 1
+  else
+    log "Expected replica count found"
+    return 0
+  fi
 }

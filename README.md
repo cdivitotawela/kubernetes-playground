@@ -5,16 +5,88 @@ Its a single command Vagrant up to setup full kubernetes play environment in a l
 
 ## Pre-Requisites
 
-- Vagrant
-- VirtualBox 6.x
+- [Vagrant](https://www.vagrantup.com/docs/installation)
+- [VirtualBox](https://www.virtualbox.org/manual/ch02.html) 6.x
 
 
-## Start Cluster
+## Configure VMs
 
-Provision cluster with single command `vagrant up`.
-Access the any of the nodes with `vagrant ssh <admin/master/node1/node2>`
-Run kubectl commands on master as root `kubectl get nodes`
+Cluster must have at least admin, master and node1 VMs. These VMs resources can be updated based on CPU and memory
+available on host machine. All VM configurations are performed on [Vagrant](Vagrant) file. Common CPU and memory 
+configuration defined at the top of the file with following config. These setting would be good minimum for a working
+cluster and this is applied for both admin and master VMs.
+```shell
+  config.vm.provider :virtualbox do |v|
+    v.memory = 2096
+    v.cpus = 2
+  end
+```
 
+Node VMs resource can be configured separately towards the bottom of the file with following config. Nodes need to have
+more resources as they run the workloads.
+```shell
+      node.vm.provider :virtualbox do |v|
+        v.name = name
+        v.memory = 4096
+        v.cpus = 2
+      end
+```
+
+Number of worker nodes to be in the cluster can be configured as follows. For example three worker nodes cluster is
+setup by having `%w{node1 node2 node3}`. Keep the VM names node[1..N]. All nodes configured with same resource
+configuration.
+```shell
+  %w{node1 node2 node3}.each_with_index do |name, i|
+  .
+  .
+  end
+```
+
+## Cluster Architecture
+
+Following diagram shows high level architecture. VM node1 port forward port 30443 which allows accessing any workloads
+via ingress controller.
+
+![alt text](architecture.svg)
+
+## Cluster Start
+
+Solution is designed to start the cluster from scratch. If any problems occurs it is best to destroy the cluster and
+re-provision again. All vagrant commands are run from the repository root where [Vagrantfile](Vagrantfile) file present.
+
+```shell
+# Create Kube Cluster
+vagrant up
+
+# Destroy kube cluster
+vagrant destroy -f
+
+# SSH into a VM
+vagrant ssh master/admin/node1
+```
+
+## Configure Kubectl on Host Machine
+
+Vagrant up command copy kube config file to /root/.kube/config folder on master. This requires user to ssh into master VM
+to execute any kubectl commands. Host machine can be setup to access the cluster via kubectl with following steps. Host 
+machine need to have [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) install. Virtual machines use
+host-only network adapter and that allows accessing the virtual machine directly from host machine.
+
+```shell
+# SSH into master VM
+vagrant ssh master
+
+# Copy the content of the kube config file
+sudo cat /root/.kube/config
+
+# Create kube config file content from master to host.
+mkdir ~/.kube && chmod 700 ~/.kube
+vi ~/.kube/config
+chmod 700 ~/.kube/config
+
+# Verify cluster 
+kubectl config get-contexts
+```
 
 ## Dynamic NFS PV Storage
 

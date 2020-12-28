@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# Install Helm
+#
+############################################
+
+# Determine script home full path
+SCRIPT_HOME=/vagrant/scripts
+
+# Load library
+source $SCRIPT_HOME/.library || {
+  echo "ERROR: Failed to load the library script $SCRIPT_HOME/.library"
+  exit 3
+}
+
+############################################
+# Install helm
+############################################
+
+curl -s https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | \
+  tar -zx --strip=1 -C /usr/bin/ -f - linux-amd64/helm \
+  || error "Failed to install Helm"
+
+chmod +x /usr/bin/helm

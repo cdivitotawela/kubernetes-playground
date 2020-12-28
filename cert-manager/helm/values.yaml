@@ -1,0 +1,15 @@
+global:
+  rbac:
+    create: true
+  podSecurityPolicy:
+    enabled: true
+
+serviceAccount:
+  create: true
+  name: cert-manager
+
+ingressShim:
+  defaultIssuerName: selfsigned-issuer
+  defaultIssuerKind: ClusterIssuer
+
+installCRDs: true

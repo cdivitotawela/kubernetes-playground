@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+#
+# Install cert-manager via Helm
+#
+############################################
+
+# Determine script home full path
+SCRIPT_HOME=/vagrant/scripts
+
+# Load library
+source $SCRIPT_HOME/.library || {
+  echo "ERROR: Failed to load the library script $SCRIPT_HOME/.library"
+  exit 3
+}
+
+############################################
+# Setup cert manager
+############################################
+
+# Verify helm is installed
+helm version > /dev/null 2>&1 || error "Helm is not installed"
+
+# Add helm repository
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+
+# Install cert-manager via Helm
+helm upgrade -i \
+  cert-manager jetstack/cert-manager \
+  --create-namespace \
+  --namespace cert-manager \
+  --version $HELM_CERT_MANAGER_VERSION \
+  --values $SCRIPT_HOME/../cert-manager/helm/values.yaml || \
+  --wait \
+  error "Helm chart installation for cert-manager failed"
+
+# Wait to reach number of replicas
+check_replicas 'cert-manager' 'cert-manager' 1 || error "Deployment cert-manager did not have expected replica count"
+check_replicas 'cert-manager' 'cert-manager-cainjector' 1 || error "Deployment cert-manager-cainjector did not have expected replica count"
+check_replicas 'cert-manager' 'cert-manager-webhook' 1 || error "Deployment cert-manager-webhook did not have expected replica count"
+
+# Sleep until pods are fully startup. Need to find better solution
+sleep 20
+kubectl apply -f $SCRIPT_HOME/../cert-manager/manifests/01-issuer.yaml || error "Failed to create cluster issuer"
+kubectl apply -f $SCRIPT_HOME/../cert-manager/manifests/02-certificate.yaml || error "Failed to create certificate"
