@@ -30,8 +30,8 @@ helm upgrade -i \
   --create-namespace \
   --namespace cert-manager \
   --version $HELM_CERT_MANAGER_VERSION \
-  --values $SCRIPT_HOME/../cert-manager/helm/values.yaml || \
-  --wait \
+  --values $SCRIPT_HOME/../cert-manager/helm/values.yaml \
+  --wait || \
   error "Helm chart installation for cert-manager failed"
 
 # Wait to reach number of replicas
@@ -42,4 +42,3 @@ check_replicas 'cert-manager' 'cert-manager-webhook' 1 || error "Deployment cert
 # Sleep until pods are fully startup. Need to find better solution
 sleep 20
 kubectl apply -f $SCRIPT_HOME/../cert-manager/manifests/01-issuer.yaml || error "Failed to create cluster issuer"
-kubectl apply -f $SCRIPT_HOME/../cert-manager/manifests/02-certificate.yaml || error "Failed to create certificate"
