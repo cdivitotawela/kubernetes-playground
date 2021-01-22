@@ -60,6 +60,11 @@ curl -s --fail --connect-timeout 2 -k -o /dev/null https://127.0.0.1:6442/versio
   mkdir -p $HOME/.kube
   cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
   kubectl get nodes > /dev/null || error "Failed to verify the cluster initialized"
+
+  # Create kube config for vagrant user
+  mkdir -p ~vagrant/.kube
+  cp -i /etc/kubernetes/admin.conf ~vagrant/.kube/config
+  chown -R vagrant:vagrant ~vagrant/.kube/config
 }
 
 # Create CNI manifest file
