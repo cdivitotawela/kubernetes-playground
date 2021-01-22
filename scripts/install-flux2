@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+#
+# Install FluxCD v2 on Kubernetes Cluster
+#
+############################################
+
+# Determine script home full path
+SCRIPT_HOME=/vagrant/scripts
+
+# Load library
+source $SCRIPT_HOME/.library || {
+  echo "ERROR: Failed to load the library script $SCRIPT_HOME/.library"
+  exit 3
+}
+
+# Fork the Github repository to your account and create a personal access token with full repository
+# right. Export GITHUB_TOKEN, GITHUB_USER and GITHUB_REPO variables with valida values before
+# executing this script.
+
+# Validation
+[[ -z $GITHUB_USER ]]  || error "Value is required for environment variable GITHUB_USER"
+[[ -z $GITHUB_TOKEN ]] || error "Value is required for environment variable GITHUB_TOKEN"
+[[ -z $GITHUB_REPO ]]  || error "Value is required for environment variable GITHUB_REPO"
+
+# Install git
+git --version > /dev/null 2>&1 || {
+  sudo yum install -y git
+}
+
+# Install flux
+flux --version >/dev/null 2>&1 || {
+  curl -s https://toolkit.fluxcd.io/install.sh | sudo bash
+}
+
+# Bootstrap flux
+flux bootstrap github \
+  --owner=$GITHUB_USER \
+  --repository=$GITHUB_REPO \
+  --branch=main \
+  --path=./flux/clusters/dev \
+  --personal || error "Failed to bootstrap the flux"
