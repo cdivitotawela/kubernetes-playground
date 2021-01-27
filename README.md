@@ -79,14 +79,22 @@ During the Flux bootstrap, repo will be updated and added Flux related resources
 These resources manage the flux itself in GitOps way
 
 ```shell
-# Export Github information
-export GITHUB_USER=cdivitotawela
-export GITHUB_REPO=kubernetes-playground
-export GITHUB_TOKEN=<personal access token>
+# Commands will be run inside the master VM as vagrant user
+vagrant ssh master
 
-# Run FluxCD bootstrap script
-scripts/install-flux2
+# Export github values
+export GITHUB_TOKEN=<personal access token>
+export GITHUB_USER=<github username>
+export GITHUB_REPO=kubernetes-playground
+
+# If FluxCD must poll different branch export the branch name
+export GITHUB_BRANCH=dev
+
+# Run bootstrap script
+/vagrant/scripts/install-flux2
 ```
+
+Please refer to [docs/fluxcd.md](docs/fluxcd.md) for more details.
 
 ## Configure Kubectl on Host Machine
 
