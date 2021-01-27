@@ -42,14 +42,14 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  %w{node1 node2}.each_with_index do |name, i|
+  %w{node1}.each_with_index do |name, i|
     config.vm.define name do |node|
       node.vm.box = "centos/7"
       node.vm.hostname = name
       node.vm.provider :virtualbox do |v|
         v.name = name
-        v.memory = 4096
-        v.cpus = 2
+        v.memory = 20000
+        v.cpus = 6
       end
       node.vm.network :private_network, ip: "172.24.20.#{i + 21}"
       # Forward port on node1 30443 for ingress.
