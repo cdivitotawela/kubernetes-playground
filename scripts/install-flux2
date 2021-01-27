@@ -17,6 +17,9 @@ source $SCRIPT_HOME/.library || {
 # right. Export GITHUB_TOKEN, GITHUB_USER and GITHUB_REPO variables with valida values before
 # executing this script.
 
+# Update the branch as necessary. Ex: main
+REPO_BRANCH=master
+
 # Validation
 [[ -z $GITHUB_USER ]]  || error "Value is required for environment variable GITHUB_USER"
 [[ -z $GITHUB_TOKEN ]] || error "Value is required for environment variable GITHUB_TOKEN"
@@ -36,6 +39,6 @@ flux --version >/dev/null 2>&1 || {
 flux bootstrap github \
   --owner=$GITHUB_USER \
   --repository=$GITHUB_REPO \
-  --branch=main \
+  --branch=$REPO_BRANCH \
   --path=./flux/clusters/dev \
   --personal || error "Failed to bootstrap the flux"

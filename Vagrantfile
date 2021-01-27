@@ -54,6 +54,7 @@ Vagrant.configure("2") do |config|
       node.vm.network :private_network, ip: "172.24.20.#{i + 21}"
       # Forward port on node1 30443 for ingress.
       if name == 'node1'
+        node.vm.network "forwarded_port", guest: 30080, host: 30080
         node.vm.network "forwarded_port", guest: 30443, host: 30443
       end
 

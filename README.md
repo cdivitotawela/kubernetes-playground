@@ -47,7 +47,7 @@ configuration.
 Following diagram shows high level architecture. VM node1 port forward port 30443 which allows accessing any workloads
 via ingress controller.
 
-![alt text](architecture.svg)
+![alt text](docs/architecture.svg)
 
 ## Cluster Start
 
@@ -63,6 +63,29 @@ vagrant destroy -f
 
 # SSH into a VM
 vagrant ssh master/admin/node1
+```
+
+## FluxCD v2 Installation
+
+FluxCD is used for deploying applications in GitOps way. FluxCD v2 need to be bootstrapped for this purpose. FluxCD used
+along with Kustomization to customise the deployment for environments. This repository only supports one environment
+and it is called `dev`. All the flux managed resources are configured in folder `flux`
+
+- Create a personal access token for the Github user account via user settings -> developer settings -> personal access tokens
+  Provide full access to repo.
+- export the environment variables GITHUB_USER, GITHUB_REPO and GITHUB_TOKEN
+
+During the Flux bootstrap, repo will be updated and added Flux related resources to the folder  flux/clusters/dev/flux-system
+These resources manage the flux itself in GitOps way
+
+```shell
+# Export Github information
+export GITHUB_USER=cdivitotawela
+export GITHUB_REPO=kubernetes-playground
+export GITHUB_TOKEN=<personal access token>
+
+# Run FluxCD bootstrap script
+scripts/install-flux2
 ```
 
 ## Configure Kubectl on Host Machine
