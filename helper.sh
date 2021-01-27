@@ -12,15 +12,17 @@ read option
 
 case $option in
   1)
-    vagrant snapshot save master base --force
-    vagrant snapshot save node1 base --force
-    vagrant snapshot save node2 base --force
+    for vm in $(vagrant status --machine-readable | grep metadata | sed 's/.*,\(.*\),metadata.*/\1/g')
+    do
+      vagrant snapshot save $vm base --force
+    done
     ;;
-  1)
+  2)
     vagrant halt
-    vagrant snapshot restore master base
-    vagrant snapshot restore node1 base
-    vagrant snapshot restore node2 base
+    for vm in $(vagrant status --machine-readable | grep metadata | sed 's/.*,\(.*\),metadata.*/\1/g')
+    do
+      vagrant snapshot restore $vm base
+    done
     ;;
   *)
     echo "Not a valid option"
