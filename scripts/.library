@@ -10,7 +10,7 @@ NFS_FOLDER="/nfs"
 NFS_MOUNT="/data"
 
 
-KUBERNETES_VERSION=1.18.10
+KUBERNETES_VERSION=1.19.13
 
 # Vagrant use eth0 and kubernetes cluster is
 VM_CLUSTER_NIC_ID=eth1
