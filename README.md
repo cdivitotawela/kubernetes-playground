@@ -3,6 +3,8 @@
 This repository code allows you to create a single master kubernetes cluster with any number of worker nodes.
 Its a single command Vagrant up to setup full kubernetes play environment in a laptop.
 
+Kubernetes Version `1.20.9`
+
 ## Pre-Requisites
 
 - [Vagrant](https://www.vagrantup.com/docs/installation)
