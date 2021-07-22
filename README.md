@@ -67,6 +67,18 @@ vagrant destroy -f
 vagrant ssh master/admin/node1
 ```
 
+## Calico CNI Manifest Template
+
+Calico CNI default manifest does not work directly on this cluster due to VM having multiple network interfaces.
+Default manifest need to be updated with `IP_AUTODETECTION_METHOD` and environment variable as per below example.
+```yaml
+  # Auto-detect the BGP IP address.
+  - name: IP
+    value: "autodetect"
+  - name: IP_AUTODETECTION_METHOD
+    value: "interface=${VM_CLUSTER_NIC_ID}"
+```
+
 ## FluxCD v2 Installation
 
 FluxCD is used for deploying applications in GitOps way. FluxCD v2 need to be bootstrapped for this purpose. FluxCD used
