@@ -1,0 +1,25 @@
+controller:
+  replicaCount: 1
+
+  nodeSelector:
+    kubernetes.io/hostname: node1
+
+  service:
+    enabled: true
+    type: NodePort
+    nodePorts:
+      http: 30080
+      https: 30443
+    ports:
+      http: 80
+      https: 443
+    enablePorts:
+      http: true
+      https: true
+
+  defaultTLSSecret:
+    enabled: true
+    secret: certificate
+
+defaultBackend:
+  enabled: false
