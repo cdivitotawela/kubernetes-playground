@@ -10,7 +10,7 @@ NFS_FOLDER="/nfs"
 NFS_MOUNT="/data"
 
 
-KUBERNETES_VERSION=1.22.3
+KUBERNETES_VERSION=1.25.8
 
 # Vagrant use eth0 and kubernetes cluster is
 VM_CLUSTER_NIC_ID=eth1
@@ -25,7 +25,7 @@ SERVICE_SUBNET="172.21.0.0/16"
 POD_SUBNET="192.168.0.0/16"  # Do not change as Calico default is set to this
 
 # CNI
-CNI_MANIFEST_TEMPLATE="calico-3.19.1.template"
+CNI_MANIFEST_TEMPLATE="calico-3.25.1.template"
 
 # Docker Compose
 DOCKER_COMPOSE_VERSION="1.27.4"

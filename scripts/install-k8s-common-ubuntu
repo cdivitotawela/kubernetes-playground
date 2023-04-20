@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#
+# Common installation on all nodes
+#
+############################################
+
+# Determine script home full path
+SCRIPT_HOME=/vagrant/scripts
+
+# Load library
+source $SCRIPT_HOME/.library || {
+  echo "ERROR: Failed to load the library script $SCRIPT_HOME/.library"
+  exit 3
+}
+
+# Add kuberenetes respository sources
+curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+# Install kubernetes packages
+apt update
+apt install -y kubelet=${KUBERNETES_VERSION}-00 \
+               kubeadm=${KUBERNETES_VERSION}-00 \
+               kubectl=${KUBERNETES_VERSION}-00
+
+apt-mark hold kubelet kubeadm kubectl
+
+# Start kubelet
+# Note: At this point kubelet start failing due to missing config file. This is not an issue as this will work once cluster created.
+#       https://portal2portal.blogspot.com/2022/11/dont-panic-kubelet-wont-start-but.html
+systemctl start kubelet
+systemctl enable kubelet
+

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+#
+# Common installation on all nodes
+#
+############################################
+
+# Determine script home full path
+SCRIPT_HOME=/vagrant/scripts
+
+# Load library
+source $SCRIPT_HOME/.library || {
+  echo "ERROR: Failed to load the library script $SCRIPT_HOME/.library"
+  exit 3
+}
+
+############################################
+# Install docker-compose
+############################################
+docker-compose version >/dev/null 2>&1 || {
+  log "Installing docker-compose version ${DOCKER_COMPOSE_VERSION}"
+  curl -s -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /bin/docker-compose
+  chmod +x /bin/docker-compose
+}
+
+docker-compose version || error "Docker compose version validation failed"
