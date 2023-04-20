@@ -63,10 +63,11 @@ curl -s --fail --connect-timeout 2 -k -o /dev/null https://127.0.0.1:6443/versio
   log "Waiting for the API server to start"
   started=false
   retries=24
+  marks=( '/' '-' '\' '|' )
   while [[ $started == "false" && $retries -gt 0 ]]
   do
     curl -k -s -o /dev/null  https://127.0.0.1:6443/version && started=false
-    echo "API server not ready..."
+    printf '%s\r' "${marks[i++ % ${#marks[@]}]}"
     sleep 5
     retries=$(expr $retries - 1)
   done
