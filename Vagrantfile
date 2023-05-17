@@ -21,10 +21,10 @@ Vagrant.configure("2") do |config|
         v.memory = 1024
         v.cpus = 2
       end
-      admin.vm.network :private_network, ip: "172.24.20.10"
-      admin.vm.provision "shell", path: 'scripts/install-base-ubuntu'
-      admin.vm.provision "shell", path: 'scripts/install-admin-ubuntu'
-      admin.vm.provision "shell", path: 'scripts/tools/setup-nfs-server-ubuntu'
+      # admin.vm.network :private_network, ip: "172.24.20.10"
+      # admin.vm.provision "shell", path: 'scripts/install-base-ubuntu'
+      #admin.vm.provision "shell", path: 'scripts/install-admin-ubuntu'
+      #admin.vm.provision "shell", path: 'scripts/tools/setup-nfs-server-ubuntu'
     end
   end
 

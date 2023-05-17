@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+#
+# Common installation on all nodes
+#
+############################################
+
+# Determine script home full path
+SCRIPT_HOME=/vagrant/scripts
+
+# Load library
+source $SCRIPT_HOME/.library || {
+  echo "ERROR: Failed to load the library script $SCRIPT_HOME/.library"
+  exit 3
+}
+
+
+############################################
+# Mount NFS share
+############################################
+mkdir -p $NFS_MOUNT
+apt install -y nfs-common
+
+# Check whether entry already added. If not add the entry.
+grep -q "^$ADMIN_VM_IP:$NFS_FOLDER" /etc/fstab || echo "$ADMIN_VM_IP:$NFS_FOLDER      $NFS_MOUNT     nfs     defaults   0 0" >> /etc/fstab
+mount -a
