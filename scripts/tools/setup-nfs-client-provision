@@ -37,126 +37,35 @@ TEMP_DIR=$(mktemp -d)
 log "Work directory $TEMP_DIR"
 
 # envsubst requires variables exported
-export ADMIN_VM_IP NFS_FOLDER
+# 20230517: This may no longer needed
+export ADMIN_VM_IP NFS_FOLDER NFS_STORAGE_CLASS
 
-# Manifest generated inline as its easier to apply variable values
-cat <<EOF > $TEMP_DIR/nfs-manifest.yaml
-kind: Namespace
-apiVersion: v1
-metadata:
-  name: nfs
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: nfs-client-provisioner
-  namespace: nfs
----
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: nfs-client-provisioner-runner
-rules:
-  - apiGroups: [""]
-    resources: ["persistentvolumes"]
-    verbs: ["get", "list", "watch", "create", "delete"]
-  - apiGroups: [""]
-    resources: ["persistentvolumeclaims"]
-    verbs: ["get", "list", "watch", "update"]
-  - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: [""]
-    resources: ["events"]
-    verbs: ["create", "update", "patch"]
----
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: run-nfs-client-provisioner
-subjects:
-  - kind: ServiceAccount
-    name: nfs-client-provisioner
-    namespace: nfs
-roleRef:
-  kind: ClusterRole
-  name: nfs-client-provisioner-runner
-  apiGroup: rbac.authorization.k8s.io
----
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: leader-locking-nfs-client-provisioner
-  namespace: nfs
-rules:
-  - apiGroups: [""]
-    resources: ["endpoints"]
-    verbs: ["get", "list", "watch", "create", "update", "patch"]
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: leader-locking-nfs-client-provisioner
-  namespace: nfs
-subjects:
-  - kind: ServiceAccount
-    name: nfs-client-provisioner
-    namespace: nfs
-roleRef:
-  kind: Role
-  name: leader-locking-nfs-client-provisioner
-  apiGroup: rbac.authorization.k8s.io
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nfs-client-provisioner
-  labels:
-    app: nfs-client-provisioner
-  namespace: nfs
-spec:
-  replicas: 1
-  strategy:
-    type: Recreate
-  selector:
-    matchLabels:
-      app: nfs-client-provisioner
-  template:
-    metadata:
-      labels:
-        app: nfs-client-provisioner
-    spec:
-      serviceAccountName: nfs-client-provisioner
-      containers:
-        - name: nfs-client-provisioner
-          image: quay.io/external_storage/nfs-client-provisioner:v3.1.0-k8s1.11
-          volumeMounts:
-            - name: nfs-client-root
-              mountPath: /persistentvolumes
-          env:
-            - name: PROVISIONER_NAME
-              value: nfs-storage
-            - name: NFS_SERVER
-              value: ${ADMIN_VM_IP}
-            - name: NFS_PATH
-              value: ${NFS_FOLDER}
-      volumes:
-        - name: nfs-client-root
-          nfs:
-            server: ${ADMIN_VM_IP}
-            path: ${NFS_FOLDER}
----
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
+# Install NFS provisioner
+helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/ || \
+  error "Failed to add helm repository"
+
+valueFile=$(mktemp)
+cat <<EOF > $valueFile
+nfs:
+  server: ${ADMIN_VM_IP}
+  path: ${NFS_FOLDER}
+
+storageClass:
   name: ${NFS_STORAGE_CLASS}
-provisioner: nfs-storage
-parameters:
-  archiveOnDelete: "false"
+  create: true
+  defaultClass: true
+
+# Allow running on master
+tolerations:
+- effect: NoSchedule
+  key: node-role.kubernetes.io/master
+  operator: Exists
 EOF
 
-# Apply generated manifest
-kubectl apply -f $TEMP_DIR/nfs-manifest.yaml || error "Failed to apply nfs client provisioner manifest"
+helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+    --values $valueFile || error "Failed to install the nfs-provisioner"
+
+rm -f $valueFile
 
 # Cleanup
 rm -rf $TEMP_DIR

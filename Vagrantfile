@@ -39,8 +39,8 @@ Vagrant.configure("2") do |config|
       master.vm.provision "shell", path: 'scripts/install-base'
       master.vm.provision "shell", path: 'scripts/install-k8s-common'
       master.vm.provision "shell", path: 'scripts/install-k8s-master'
-      master.vm.provision "shell", path: 'scripts/tools/setup-nfs-client-provision'
       master.vm.provision "shell", path: 'scripts/tools/setup-helm'
+      master.vm.provision "shell", path: 'scripts/tools/setup-nfs-client-provision'
     end
   end
 
