@@ -26,7 +26,7 @@ chown nfsnobody:nfsnobody $NFS_FOLDER
 chmod 755 /nfs
 
 cat<<EOF >/etc/exports
-/nfs  172.24.20.0/24(rw,all_squash)
+/nfs  172.24.20.0/24(rw,no_root_squash)
 EOF
 
 exportfs -a

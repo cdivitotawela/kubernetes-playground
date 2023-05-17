@@ -19,7 +19,7 @@ Vagrant.configure("2") do |config|
       admin.vm.provider :virtualbox do |v|
         v.name = name
         v.memory = 1024
-        v.cpus = 2
+        v.cpus = 1
       end
       admin.vm.network :private_network, ip: "172.24.20.10"
       admin.vm.provision "shell", path: 'scripts/install-base'
@@ -34,6 +34,8 @@ Vagrant.configure("2") do |config|
       master.vm.hostname = name
       master.vm.provider :virtualbox do |v|
         v.name = name
+        v.memory = 2048
+        v.cpus = 1
       end
       master.vm.network :private_network, ip: "172.24.20.11"
       master.vm.provision "shell", path: 'scripts/install-base'
@@ -51,7 +53,7 @@ Vagrant.configure("2") do |config|
       node.vm.provider :virtualbox do |v|
         v.name = name
         v.memory = 25600
-        v.cpus = 6 
+        v.cpus = 7
       end
       node.vm.network :private_network, ip: "172.24.20.#{i + 21}"
       # Forward port on node1 30443 for ingress.

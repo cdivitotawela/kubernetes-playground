@@ -30,6 +30,12 @@ cat<<EOF > /etc/sysctl.d/10-k8s.conf
 net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
 EOF
+
+# For Elasticsearch
+cat<<EOF > /etc/sysctl.d/11-elasticsearch.conf
+vm.max_map_count = 320000
+EOF
+
 sysctl --system
 
 # Disable SELinux
