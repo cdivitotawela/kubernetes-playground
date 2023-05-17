@@ -74,3 +74,6 @@ envsubst < ${SCRIPT_HOME}/cni/${CNI_MANIFEST_TEMPLATE} > ${TEMP_CNI_MANIFEST}
 
 # Apply the CNI manifest
 kubectl apply -f ${TEMP_CNI_MANIFEST}
+
+# Add alias for kubectl for vagrant user
+echo "alias k='kubectl'" >> ~vagrant/.bash_profile

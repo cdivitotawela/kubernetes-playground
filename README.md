@@ -139,22 +139,50 @@ Dynamic NFS pv provisioning help creating PVs dynamically when a PVC is created.
 and PVC must add a annotation to indicate the storage class. Following example shows how to create PVC using
 the dynamic nfs PV provisioning.
 
-On the master node as root create file `/tmp/my-pvc.yaml` with content:
+On the master node as vagrant create file `/tmp/pvc-data.yaml` with content:
 ```yaml
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: my-pvc
-  annotations:
-    volume.beta.kubernetes.io/storage-class: "nfs-storage"
+  name: data
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Mi
+      storage: 100Mi
 ```
-
-On the master node as root run `kubectl apply -f /tmp/my-pvc.yaml` to create the pvc.
+On the master node as root run `kubectl apply -f /tmp/pvc-data.yaml` to create the pvc.
 Check the pvc is created and bound with command `kubectl get pvc`. Check on admin VM at /nfs
 new folder created for the PV.
+
+Create a Pod to use the PVC. This Pod manifest has toleration to run on master node and
+also runs as user 999. Exec into the Pod and verify that files can be created in /data 
+folder.
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pvc-test
+spec:
+  tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+    operator: Exists  
+  securityContext:
+    runAsUser: 999
+    runAsGroup: 999
+    fsGroup: 999
+  containers:
+  - image: alpine
+    name: debug
+    command: ["sleep","3600"]
+    volumeMounts:
+    - mountPath: "/data"
+      name: data
+  volumes:
+    - name: data 
+      persistentVolumeClaim:
+        claimName: data
+```
+

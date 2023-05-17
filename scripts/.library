@@ -10,7 +10,7 @@ NFS_FOLDER="/nfs"
 NFS_MOUNT="/data"
 
 
-KUBERNETES_VERSION=1.22.3
+KUBERNETES_VERSION=1.23.9
 
 # Vagrant use eth0 and kubernetes cluster is
 VM_CLUSTER_NIC_ID=eth1
@@ -31,7 +31,7 @@ CNI_MANIFEST_TEMPLATE="calico-3.19.1.template"
 DOCKER_COMPOSE_VERSION="1.27.4"
 
 # NFS dynamic PVs
-NFS_STORAGE_CLASS="nfs-storage"
+NFS_STORAGE_CLASS="nfs"
 
 # Helm version
 HELM_VERSION="v3.4.2"

@@ -39,8 +39,8 @@ Vagrant.configure("2") do |config|
       master.vm.provision "shell", path: 'scripts/install-base'
       master.vm.provision "shell", path: 'scripts/install-k8s-common'
       master.vm.provision "shell", path: 'scripts/install-k8s-master'
-      master.vm.provision "shell", path: 'scripts/tools/setup-nfs-client-provision'
       master.vm.provision "shell", path: 'scripts/tools/setup-helm'
+      master.vm.provision "shell", path: 'scripts/tools/setup-nfs-client-provision'
     end
   end
 
@@ -50,8 +50,8 @@ Vagrant.configure("2") do |config|
       node.vm.hostname = name
       node.vm.provider :virtualbox do |v|
         v.name = name
-        v.memory = 2048
-        v.cpus = 2 
+        v.memory = 25600
+        v.cpus = 6 
       end
       node.vm.network :private_network, ip: "172.24.20.#{i + 21}"
       # Forward port on node1 30443 for ingress.
