@@ -50,8 +50,8 @@ Vagrant.configure("2") do |config|
       node.vm.hostname = name
       node.vm.provider :virtualbox do |v|
         v.name = name
-        v.memory = 2048
-        v.cpus = 2 
+        v.memory = 25600
+        v.cpus = 6 
       end
       node.vm.network :private_network, ip: "172.24.20.#{i + 21}"
       # Forward port on node1 30443 for ingress.
