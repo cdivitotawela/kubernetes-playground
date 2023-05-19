@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
     v.cpus = 2
   end
 
-  %w{admin}.each_with_index do |name, i|
+  %w{admina}.each_with_index do |name, i|
     config.vm.define name do |admin|
       admin.vm.box = "centos/7"
       admin.vm.hostname = name
@@ -28,14 +28,14 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  %w{master}.each_with_index do |name, i|
+  %w{mastera}.each_with_index do |name, i|
     config.vm.define name do |master|
       master.vm.box = "centos/7"
       master.vm.hostname = name
       master.vm.provider :virtualbox do |v|
         v.name = name
-        v.memory = 2048
-        v.cpus = 2
+        v.memory = 4096
+        v.cpus = 4
       end
       master.vm.network :private_network, ip: "172.24.20.11"
       master.vm.provision "shell", path: 'scripts/install-base'
@@ -46,14 +46,14 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  %w{node1 node2}.each_with_index do |name, i|
+  %w{nodea1 nodea2 nodea3}.each_with_index do |name, i|
     config.vm.define name do |node|
       node.vm.box = "centos/7"
       node.vm.hostname = name
       node.vm.provider :virtualbox do |v|
         v.name = name
-        v.memory = 29000
-        v.cpus = 10
+        v.memory = 4096
+        v.cpus = 4 
       end
       node.vm.network :private_network, ip: "172.24.20.#{i + 21}"
       # Forward port on node1 30443 for ingress.
