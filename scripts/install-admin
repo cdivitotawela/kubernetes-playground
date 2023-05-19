@@ -18,7 +18,8 @@ source $SCRIPT_HOME/.library || {
 ############################################
 docker-compose version >/dev/null 2>&1 || {
   log "Installing docker-compose version ${DOCKER_COMPOSE_VERSION}"
-  curl -s -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /bin/docker-compose
+  curl -s -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" \
+    -o /bin/docker-compose || error "Failed to download the docker-compose"
   chmod +x /bin/docker-compose
 }
 
